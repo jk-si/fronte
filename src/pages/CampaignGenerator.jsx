@@ -298,7 +298,7 @@ const handleSubmit = async (e) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="">
       <Card>
         <CardHeader>
           <CardTitle>Create Campaign</CardTitle>
@@ -342,7 +342,7 @@ const handleSubmit = async (e) => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mt-[30px]">
         <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-6 py-4">
           <CardTitle>My Campaigns</CardTitle>
