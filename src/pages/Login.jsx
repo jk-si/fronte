@@ -11,6 +11,7 @@ function validateEmail(email) {
   return /\S+@\S+\.\S+/.test(email);
 }
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +36,7 @@ export default function Login() {
     setLoading(true);
     try {
       // Real API call
-      const response = await fetch("http://localhost:3000/api/admin/login", {
+      const response = await fetch(`${API_BASE}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
