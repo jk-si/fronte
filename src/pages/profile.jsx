@@ -126,7 +126,7 @@ export default function Profile() {
       setPasswordStrength({
         length: false,
         lowercase: false,
-        uppercase: false,
+        uppercase: false, 
         number: false,
         special: false,
         match: false
