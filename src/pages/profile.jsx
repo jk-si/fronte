@@ -4,6 +4,8 @@ import { toast } from "@/components/ui/sonner";
 // Placeholder image for profile
 const PLACEHOLDER_IMG = "https://ui-avatars.com/api/?name=Admin&background=E0E7FF&color=3730A3&size=128";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const formatDate = (dateStr) => {
   if (!dateStr) return "Never";
   const date = new Date(dateStr);
