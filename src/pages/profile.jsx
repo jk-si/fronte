@@ -37,7 +37,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       setLoadingProfile(true);
       try {
-        const res = await fetch(`${API_BASE}/api/admin/profile`, {
+        const res = await fetch(`${API_BASE}/admin/profile`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
           },
@@ -107,7 +107,7 @@ export default function Profile() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/api/admin/change-password`, {
+      const res = await fetch(`${API_BASE}/admin/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
