@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function CampaignView() {
   const { originalUrl } = useParams();

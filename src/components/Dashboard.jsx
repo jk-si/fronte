@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, Link, Globe, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+console.log(API_BASE ,"API_BASEAPI_BASEAPI_BASEAPI_BASE")
 export function Dashboard() {
   const [stats, setStats] = useState({
     totalCampaigns: 0,
