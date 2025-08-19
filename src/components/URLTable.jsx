@@ -20,7 +20,7 @@ const mockUrls = [
     originalUrl: 'https://example.com/product/laptop-gaming',
     country: 'United States',
     countryCode: 'us',
-    generatedUrl: 'https://affiliate.linkforge.com/us/abc123?url=https%3A//example.com/product/laptop-gaming',
+            generatedUrl: 'https://generate.linkforge.com/us/abc123?url=https%3A//example.com/product/laptop-gaming',
     dateTime: '2024-01-15 14:30:22',
     status: 'active',
     clicks: 156,
@@ -30,7 +30,7 @@ const mockUrls = [
     originalUrl: 'https://shop.example.com/books/programming',
     country: 'United Kingdom',
     countryCode: 'uk',
-    generatedUrl: 'https://affiliate.linkforge.com/uk/def456?url=https%3A//shop.example.com/books/programming',
+            generatedUrl: 'https://generate.linkforge.com/uk/def456?url=https%3A//shop.example.com/books/programming',
     dateTime: '2024-01-15 13:15:10',
     status: 'active',
     clicks: 89,
@@ -40,7 +40,7 @@ const mockUrls = [
     originalUrl: 'https://store.example.com/electronics/phone',
     country: 'Canada',
     countryCode: 'ca',
-    generatedUrl: 'https://affiliate.linkforge.com/ca/ghi789?url=https%3A//store.example.com/electronics/phone',
+            generatedUrl: 'https://generate.linkforge.com/ca/ghi789?url=https%3A//store.example.com/electronics/phone',
     dateTime: '2024-01-15 12:45:33',
     status: 'paused',
     clicks: 234,
@@ -50,7 +50,7 @@ const mockUrls = [
     originalUrl: 'https://market.example.com/fashion/shoes',
     country: 'Australia',
     countryCode: 'au',
-    generatedUrl: 'https://affiliate.linkforge.com/au/jkl012?url=https%3A//market.example.com/fashion/shoes',
+            generatedUrl: 'https://generate.linkforge.com/au/jkl012?url=https%3A//market.example.com/fashion/shoes',
     dateTime: '2024-01-15 11:20:45',
     status: 'active',
     clicks: 67,
@@ -60,7 +60,7 @@ const mockUrls = [
     originalUrl: 'https://tech.example.com/gadgets/smartwatch',
     country: 'Germany',
     countryCode: 'de',
-    generatedUrl: 'https://affiliate.linkforge.com/de/mno345?url=https%3A//tech.example.com/gadgets/smartwatch',
+            generatedUrl: 'https://generate.linkforge.com/de/mno345?url=https%3A//tech.example.com/gadgets/smartwatch',
     dateTime: '2024-01-15 10:05:18',
     status: 'active',
     clicks: 123,
@@ -95,7 +95,7 @@ console.log(urls ,"urls")
     setUrls(urls.filter(url => url.id !== id));
     toast({
       title: "URL Deleted",
-      description: "Affiliate URL has been removed.",
+              description: "Generate URL has been removed.",
     });
   };
 
@@ -117,10 +117,10 @@ console.log(urls ,"urls")
     <Card className="shadow-lg border-0 bg-gradient-card">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-foreground">
-          Generated Affiliate URLs
+                      Generated URLs
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Manage and track your affiliate links
+                      Manage and track your generate links
         </p>
       </CardHeader>
       <CardContent>
@@ -140,7 +140,7 @@ console.log(urls ,"urls")
             </TableHeader>
             <TableBody>
               {urls.map((url) => {
-                const fullAffiliateUrl = url.originalUrl && url.affiliateSuffix ? url.originalUrl + url.affiliateSuffix : '';
+                const fullGenerateUrl = url.originalUrl && url.generateSuffix ? url.originalUrl + url.generateSuffix : '';
                 return (
                   <TableRow key={url.id} className="border-border hover:bg-muted/30">
                     {/* <TableCell className="max-w-xs">
@@ -155,9 +155,9 @@ console.log(urls ,"urls")
                       <span className="text-foreground">{url.country}</span>
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      <code className="text-xs text-muted-foreground truncate block" title={fullAffiliateUrl}>
-                        {fullAffiliateUrl}
-                      </code>
+                                          <code className="text-xs text-muted-foreground truncate block" title={fullGenerateUrl}>
+                      {fullGenerateUrl}
+                    </code>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {url.proxyIp}
@@ -176,13 +176,13 @@ console.log(urls ,"urls")
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleCopy(fullAffiliateUrl)}
+                          onClick={() => handleCopy(fullGenerateUrl)}
                           className="h-8 w-8"
                           title="Copy URL"
                         >
                           <Copy className="w-4 h-4" />
                         </Button>
-                        {/* Add preview/share buttons here if needed, using fullAffiliateUrl */}
+                        {/* Add preview/share buttons here if needed, using fullGenerateUrl */}
                       </div>
                     </TableCell>
                   </TableRow>

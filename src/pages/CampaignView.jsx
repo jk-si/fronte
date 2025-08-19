@@ -3,13 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
-import { get, post } from '@/utils/api';
+import { get, post, getPublic } from '@/utils/api';
 
 export default function CampaignView() {
   const { originalUrl } = useParams();
   const navigate = useNavigate();
   const [campaign, setCampaign] = useState(null);
-  const [latestAffiliateUrl, setLatestAffiliateUrl] = useState(null);
+  const [latestGenerateUrl, setLatestGenerateUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -20,12 +20,12 @@ export default function CampaignView() {
         const data = await get(`/campaign/${encodeURIComponent(originalUrl)}`);
         setCampaign(data);
         
-        // Fetch latest affiliate URL for this campaign
+        // Fetch latest generate URL for this campaign (public access)
         try {
-          const affData = await get(`/affiliate-urls/${data._id}`);
-          setLatestAffiliateUrl(affData);
+          const affData = await getPublic(`/generate-urls/${data._id}`);
+          setLatestGenerateUrl(affData);
         } catch (err) {
-          setLatestAffiliateUrl(null);
+          setLatestGenerateUrl(null);
         }
       } catch (err) {
         toast({ title: err.message || 'Failed to fetch campaign', variant: 'destructive' });
@@ -36,13 +36,13 @@ export default function CampaignView() {
     fetchCampaign();
   }, [originalUrl]);
 
-  const handleGenerateAffiliateUrl = async () => {
+  const handleGenerateUrl = async () => {
     if (!campaign) return;
     
     if (!campaign.isActive) {
       toast({ 
         title: 'Campaign is inactive', 
-        description: 'Cannot generate affiliate URL for inactive campaigns',
+        description: 'Cannot generate URL for inactive campaigns',
         variant: 'destructive' 
       });
       return;
@@ -50,23 +50,23 @@ export default function CampaignView() {
 
     setGenerating(true);
     try {
-      await post('/affiliate-url', {
+      await post('/generate-url', {
         campaignId: campaign._id,
-        baseAffiliateUrl: campaign.originalUrl,
+        baseGenerateUrl: campaign.originalUrl,
         country: campaign.country
       });
 
-      toast({ title: 'Affiliate URL generated successfully!' });
+      toast({ title: 'URL generated successfully!' });
       
-      // Refresh latest affiliate URL
+      // Refresh latest generate URL (public access)
       try {
-        const affData = await get(`/affiliate-urls/${campaign._id}`);
-        setLatestAffiliateUrl(affData);
+        const affData = await getPublic(`/generate-urls/${campaign._id}`);
+        setLatestGenerateUrl(affData);
       } catch (err) {
-        console.error('Failed to refresh affiliate URL:', err);
+        console.error('Failed to refresh generate URL:', err);
       }
     } catch (err) {
-      toast({ title: err.message || 'Failed to generate affiliate URL', variant: 'destructive' });
+      toast({ title: err.message || 'Failed to generate URL', variant: 'destructive' });
     } finally {
       setGenerating(false);
     }
@@ -106,70 +106,70 @@ export default function CampaignView() {
             
             {/* Generate Button */}
             <div>
-              {/* <Button 
-                onClick={handleGenerateAffiliateUrl}
-                disabled={generating || campaign.isActive === false}
-                className="w-full md:w-auto"
-              >
-                {generating ? 'Generating...' : 'Generate Affiliate URL'}
-              </Button> */}
-              {campaign.isActive === false && (
-                <p className="text-sm text-red-600 mt-2">
-                  Campaign is inactive. Cannot generate affiliate URLs.
-                </p>
-              )}
+                             {/* <Button 
+                 onClick={handleGenerateUrl}
+                 disabled={generating || campaign.isActive === false}
+                 className="w-full md:w-auto"
+               >
+                 {generating ? 'Generating...' : 'Generate URL'}
+               </Button> */}
+               {campaign.isActive === false && (
+                 <p className="text-sm text-red-600 mt-2">
+                   Campaign is inactive. Cannot generate URLs.
+                 </p>
+               )}
             </div>
             
-            {/* Latest Affiliate URL Display */}
-            {latestAffiliateUrl && latestAffiliateUrl.hasAffiliateUrl ? (
-              <div className="border-t pt-6">
-                <div className="text-sm font-medium text-gray-900 mb-3">Latest Affiliate URL</div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Full Affiliate URL</div>
-                    <div className="p-3 bg-gray-50 rounded-md break-all font-mono text-sm border">
-                      {latestAffiliateUrl.fullAffiliateUrl}
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Proxy IP</div>
-                      <div className="font-medium text-sm">{latestAffiliateUrl.proxyIp}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Generated</div>
-                      <div className="font-medium text-sm">
-                        {latestAffiliateUrl.createdAt ? new Date(latestAffiliateUrl.createdAt).toLocaleString() : 'N/A'}
-                      </div>
-                    </div>
-                    <div className="flex items-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(latestAffiliateUrl.fullAffiliateUrl);
-                            toast({ title: 'URL copied to clipboard!' });
-                          } catch (err) {
-                            toast({ title: 'Failed to copy URL', variant: 'destructive' });
-                          }
-                        }}
-                      >
-                        Copy URL
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="border-t pt-6">
-                <div className="text-sm font-medium text-gray-900 mb-2">Affiliate URL</div>
-                <p className="text-sm text-blue-600">
-                  No affiliate URL generated yet.
-                </p>
-              </div>
-            )}
+                         {/* Latest Generate URL Display */}
+             {latestGenerateUrl && latestGenerateUrl.hasGenerateUrl ? (
+               <div className="border-t pt-6">
+                 <div className="text-sm font-medium text-gray-900 mb-3">Latest Generate URL</div>
+                 <div className="space-y-3">
+                   <div>
+                     <div className="text-xs text-muted-foreground mb-1">Full Generate URL</div>
+                     <div className="p-3 bg-gray-50 rounded-md break-all font-mono text-sm border">
+                       {latestGenerateUrl.fullGenerateUrl}
+                     </div>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div>
+                       <div className="text-xs text-muted-foreground mb-1">Proxy IP</div>
+                       <div className="font-medium text-sm">{latestGenerateUrl.proxyIp}</div>
+                     </div>
+                     <div>
+                       <div className="text-xs text-muted-foreground mb-1">Generated</div>
+                       <div className="font-medium text-sm">
+                         {latestGenerateUrl.createdAt ? new Date(latestGenerateUrl.createdAt).toLocaleString() : 'N/A'}
+                       </div>
+                     </div>
+                     <div className="flex items-end">
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={async () => {
+                           try {
+                             await navigator.clipboard.writeText(latestGenerateUrl.fullGenerateUrl);
+                             toast({ title: 'URL copied to clipboard!' });
+                           } catch (err) {
+                             toast({ title: 'Failed to copy URL', variant: 'destructive' });
+                           }
+                         }}
+                       >
+                         Copy URL
+                       </Button>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             ) : (
+               <div className="border-t pt-6">
+                 <div className="text-sm font-medium text-gray-900 mb-2">Generate URL</div>
+                 <p className="text-sm text-blue-600">
+                   No generate URL generated yet.
+                 </p>
+               </div>
+             )}
           </div>
         </CardContent>
       </Card>

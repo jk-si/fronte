@@ -191,12 +191,12 @@ const handleSubmit = async (e) => {
     if (!deleteTarget) return;
     setDeleteLoading(true);
     try {
-      // Optionally delete affiliate URLs first
+      // Optionally delete generate URLs first
       if (deleteUrlsChecked) {
         // Fetch campaignId by originalUrl
         const campaignData = await get(`/campaign/${encodeURIComponent(deleteTarget.originalUrl)}`);
         if (campaignData._id) {
-          await del(`/affiliate-urls/${campaignData._id}`);
+          await del(`/generate-urls/${campaignData._id}`);
         }
       }
       // Delete campaign
@@ -252,7 +252,7 @@ const handleSubmit = async (e) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="">
       <Card>
         <CardHeader>
           <CardTitle>Create Campaign</CardTitle>
@@ -296,7 +296,7 @@ const handleSubmit = async (e) => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mt-[30px]">
         <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-6 py-4">
           <CardTitle>My Campaigns</CardTitle>
@@ -479,7 +479,7 @@ const handleSubmit = async (e) => {
                 className="mr-2 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
               />
               <label htmlFor="delete-urls-checkbox" className="text-sm select-none">
-                Also delete all <span className="font-semibold">Generated Affiliate URLs</span> linked to this campaign.
+                                 Also delete all <span className="font-semibold">Generated URLs</span> linked to this campaign.
               </label>
             </div>
             <div className="flex justify-end gap-2">

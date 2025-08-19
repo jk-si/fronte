@@ -63,7 +63,7 @@ export function Dashboard() {
       <div className="bg-gradient-primary rounded-lg p-6 text-primary-foreground">
         <h1 className="text-2xl font-bold mb-2">Welcome back, Admin!</h1>
         <p className="text-primary-foreground/80">
-          Manage your affiliate URLs and track performance across different countries.
+          Manage your generate URLs and track performance across different countries.
         </p>
       </div>
 
@@ -112,7 +112,7 @@ export function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground">Generate New URL</h3>
-                  <p className="text-sm text-muted-foreground">Create affiliate links</p>
+                                     <p className="text-sm text-muted-foreground">Create generate links</p>
                 </div>
               </div>
             </div>

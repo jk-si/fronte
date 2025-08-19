@@ -31,28 +31,28 @@ export function URLGenerator() {
   const [country, setCountry] = useState('');
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [copied, setCopied] = useState(false);
-  const [affiliateSuffix, setAffiliateSuffix] = useState('');
+  const [generateSuffix, setGenerateSuffix] = useState('');
 
   const handleGenerate = () => {
     if (!url || !country) {
       toast({
         title: "Missing Information",
-        description: "Please enter both URL and country to generate affiliate link.",
+        description: "Please enter both URL and country to generate link.",
         variant: "destructive",
       });
       return;
     }
-    // Simulate affiliate suffix generation
-    const affiliateId = Math.random().toString(36).substring(2, 8);
-    const suffix = `?aff=${affiliateId}&country=${country}`;
-    setAffiliateSuffix(suffix);
+    // Simulate generate suffix generation
+    const generateId = Math.random().toString(36).substring(2, 8);
+    const suffix = `?aff=${generateId}&country=${country}`;
+    setGenerateSuffix(suffix);
     toast({
       title: "Suffix Generated!",
-      description: "Your affiliate suffix has been generated successfully.",
+      description: "Your generate suffix has been generated successfully.",
     });
   };
 
-  const fullAffiliateUrl = url && affiliateSuffix ? url + affiliateSuffix : '';
+  const fullGenerateUrl = url && generateSuffix ? url + generateSuffix : '';
 
   return (
     <div className="space-y-6">
@@ -61,7 +61,7 @@ export function URLGenerator() {
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-foreground flex items-center space-x-2">
             <ExternalLink className="w-5 h-5 text-primary" />
-            <span>Affiliate URL Generator</span>
+            <span>Generate URL Generator</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -105,35 +105,35 @@ export function URLGenerator() {
             variant="gradient"
             size="lg"
           >
-            Generate Affiliate URL
+            Generate URL
           </Button>
         </CardContent>
       </Card>
 
       {/* Generated URL Preview */}
-      {fullAffiliateUrl && (
+      {fullGenerateUrl && (
         <Card className="shadow-lg border-0 bg-gradient-card animate-fade-in">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-foreground">
-              Generated Affiliate URL
+              Generated URL
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-2 p-3 bg-muted rounded-md">
               <code className="flex-1 text-sm text-foreground break-all">
-                {fullAffiliateUrl}
+                {fullGenerateUrl}
               </code>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={async () => {
                   try {
-                    await navigator.clipboard.writeText(fullAffiliateUrl);
+                    await navigator.clipboard.writeText(fullGenerateUrl);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                     toast({
                       title: "Copied!",
-                      description: "Affiliate URL copied to clipboard.",
+                      description: "Generate URL copied to clipboard.",
                     });
                   } catch (err) {
                     toast({

@@ -79,6 +79,32 @@ const get = async (endpoint, params = {}) => {
 };
 
 /**
+ * GET request without authentication (for public endpoints)
+ * @param {string} endpoint - API endpoint
+ * @param {Object} params - Query parameters
+ * @returns {Promise<Object>} Response data
+ */
+const getPublic = async (endpoint, params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+  
+  const response = await fetch(`${API_BASE}${url}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'API request failed');
+  }
+
+  return data;
+};
+
+/**
  * POST request
  * @param {string} endpoint - API endpoint
  * @param {Object} body - Request body
@@ -133,6 +159,7 @@ export {
   getDefaultHeaders,
   apiRequest,
   get,
+  getPublic,
   post,
   put,
   patch,
