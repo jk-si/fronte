@@ -3,8 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import { get, post } from '@/utils/api';
 
 export default function CampaignView() {
   const { originalUrl } = useParams();
@@ -18,25 +17,14 @@ export default function CampaignView() {
     const fetchCampaign = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/campaign/${encodeURIComponent(originalUrl)}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || data.message || 'Failed to fetch campaign');
-        }
-        const data = await res.json();
+        const data = await get(`/campaign/${encodeURIComponent(originalUrl)}`);
         setCampaign(data);
         
         // Fetch latest affiliate URL for this campaign
-        const affRes = await fetch(`${API_BASE}/affiliate-urls/${data._id}?latest=true`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-        });
-
-        if (affRes.ok) {
-          const affData = await affRes.json();
+        try {
+          const affData = await get(`/affiliate-urls/${data._id}`);
           setLatestAffiliateUrl(affData);
-        } else {
+        } catch (err) {
           setLatestAffiliateUrl(null);
         }
       } catch (err) {
@@ -62,34 +50,20 @@ export default function CampaignView() {
 
     setGenerating(true);
     try {
-      const res = await fetch(`${API_BASE}/affiliate-url`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify({
-          campaignId: campaign._id,
-          baseAffiliateUrl: campaign.originalUrl,
-          country: campaign.country
-        })
+      await post('/affiliate-url', {
+        campaignId: campaign._id,
+        baseAffiliateUrl: campaign.originalUrl,
+        country: campaign.country
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || data.message || 'Failed to generate affiliate URL');
-      }
 
       toast({ title: 'Affiliate URL generated successfully!' });
       
       // Refresh latest affiliate URL
-      const affRes = await fetch(`${API_BASE}/affiliate-urls/${campaign._id}?latest=true`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-      });
-
-      if (affRes.ok) {
-        const affData = await affRes.json();
+      try {
+        const affData = await get(`/affiliate-urls/${campaign._id}`);
         setLatestAffiliateUrl(affData);
+      } catch (err) {
+        console.error('Failed to refresh affiliate URL:', err);
       }
     } catch (err) {
       toast({ title: err.message || 'Failed to generate affiliate URL', variant: 'destructive' });

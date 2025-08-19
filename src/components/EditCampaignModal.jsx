@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import { put } from '@/utils/api';
 
 export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries }) {
   const [form, setForm] = useState({ originalUrl: '', country: '' });
@@ -39,22 +38,10 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/campaign/${campaign._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify({
-          originalUrl: form.originalUrl,
-          country: form.country
-        })
+      const data = await put(`/campaign/${campaign._id}`, {
+        originalUrl: form.originalUrl,
+        country: form.country
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || data.message || 'Failed to update campaign');
-      }
 
       toast({ title: 'Campaign updated successfully!' });
       onSave(data);

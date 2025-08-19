@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, Link, Globe, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { get } from '@/utils/api';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-console.log(API_BASE ,"API_BASEAPI_BASEAPI_BASEAPI_BASE")
 export function Dashboard() {
   const [stats, setStats] = useState({
     totalCampaigns: 0,
@@ -17,13 +15,7 @@ export function Dashboard() {
     const fetchDashboardStats = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/dashboard/stats`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-        });
-        if (!res.ok) {
-          throw new Error(`Failed to fetch dashboard stats: ${res.status}`);
-        }
-        const data = await res.json();
+        const data = await get('/dashboard/stats');
         setStats(data);
       } catch (err) {
         console.error('Error fetching dashboard stats:', err);

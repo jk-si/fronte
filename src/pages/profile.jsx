@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
+import { useNavigate } from "react-router-dom";
+import { get, put } from "@/utils/api";
 
 // Placeholder image for profile
 const PLACEHOLDER_IMG = "https://ui-avatars.com/api/?name=Admin&background=E0E7FF&color=3730A3&size=128";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "Never";
@@ -16,6 +16,8 @@ const formatDate = (dateStr) => {
 };
 
 export default function Profile() {
+  const navigate = useNavigate();
+  
   // User data state
   const [user, setUser] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -39,13 +41,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       setLoadingProfile(true);
       try {
-        const res = await fetch(`${API_BASE}/admin/profile`, {
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || data.message || "Failed to fetch profile");
+        const data = await get('/admin/profile');
         setUser(data.data);
       } catch (err) {
         toast.error(err.message || "Failed to fetch profile");
@@ -109,26 +105,17 @@ export default function Profile() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/admin/change-password`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-        body: JSON.stringify({
-          currentPassword: pwForm.current,
-          newPassword: pwForm.new,
-        }),
+      await put('/admin/change-password', {
+        currentPassword: pwForm.current,
+        newPassword: pwForm.new,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || "Failed to change password");
       toast.success("Password changed successfully");
       setShowPasswordModal(false);
       setPwForm({ current: "", new: "", confirm: "" });
       setPasswordStrength({
         length: false,
         lowercase: false,
-        uppercase: false, 
+        uppercase: false,
         number: false,
         special: false,
         match: false

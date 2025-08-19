@@ -12,8 +12,7 @@ import { Fragment } from 'react';
 import { EditCampaignModal } from '@/components/EditCampaignModal';
 import { Switch } from '@/components/ui/switch';
 import { useDebounce } from '@/hooks/use-debounce';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import { get, post, del, patch } from '@/utils/api';
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -60,11 +59,7 @@ useEffect(() => {
   const fetchCountries = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/countries`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || 'Failed to fetch countries');
+      const data = await get('/admin/countries');
       if (mounted) {
         setCountries((data || []).map(c => ({
           value: c.code,   // Send code when submitting
@@ -86,24 +81,20 @@ useEffect(() => {
   const fetchCampaigns = async (page = 1) => {
     try {
       setSearchLoading(true);
-      const params = new URLSearchParams({
+      const params = {
         page: page.toString(),
         limit: '50'
-      });
+      };
       
       if (debouncedSearchTerm.trim()) {
-        params.append('search', debouncedSearchTerm.trim());
+        params.search = debouncedSearchTerm.trim();
       }
       
       if (statusFilter !== 'all') {
-        params.append('status', statusFilter);
+        params.status = statusFilter;
       }
       
-      const res = await fetch(`${API_BASE}/campaigns?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || 'Failed to fetch campaigns');
+      const data = await get('/campaigns', params);
       
       setCampaigns(data.campaigns || []);
       setPagination(data.pagination || {
@@ -163,28 +154,19 @@ const handleSubmit = async (e) => {
   }
   setSubmitting(true);
   try {
-    const res = await fetch(`${API_BASE}/campaign`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      },
-      body: JSON.stringify({ 
-        country: form.country, // <-- this is the country code now
-        originalUrl: form.originalUrl 
-      })
+    const data = await post('/campaign', { 
+      country: form.country, // <-- this is the country code now
+      originalUrl: form.originalUrl 
     });
-    if (res.status === 409) {
-      toast({ title: 'A campaign with this URL already exists.', variant: 'destructive' });
-      return;
-    }
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || data.message || 'Failed to create campaign');
     toast({ title: 'Campaign created!' });
     setForm({ country: '', originalUrl: '' });
     await fetchCampaigns();
   } catch (err) {
-    toast({ title: err.message || 'Failed to create campaign', variant: 'destructive' });
+    if (err.message.includes('409')) {
+      toast({ title: 'A campaign with this URL already exists.', variant: 'destructive' });
+    } else {
+      toast({ title: err.message || 'Failed to create campaign', variant: 'destructive' });
+    }
   } finally {
     setSubmitting(false);
   }
@@ -212,28 +194,13 @@ const handleSubmit = async (e) => {
       // Optionally delete affiliate URLs first
       if (deleteUrlsChecked) {
         // Fetch campaignId by originalUrl
-        const campaignRes = await fetch(`${API_BASE}/campaign/${encodeURIComponent(deleteTarget.originalUrl)}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-        });
-        if (campaignRes.ok) {
-          const campaignData = await campaignRes.json();
-          if (campaignData._id) {
-            await fetch(`${API_BASE}/affiliate-urls/${campaignData._id}`, {
-              method: 'DELETE',
-              headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-            });
-          }
+        const campaignData = await get(`/campaign/${encodeURIComponent(deleteTarget.originalUrl)}`);
+        if (campaignData._id) {
+          await del(`/affiliate-urls/${campaignData._id}`);
         }
       }
       // Delete campaign
-      const res = await fetch(`${API_BASE}/campaign/${encodeURIComponent(deleteTarget.originalUrl)}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || data.message || 'Failed to delete campaign');
-      }
+      await del(`/campaign/${encodeURIComponent(deleteTarget.originalUrl)}`);
       toast({ title: 'Campaign deleted.' });
       await fetchCampaigns();
       closeDeleteModal();
@@ -271,20 +238,7 @@ const handleSubmit = async (e) => {
     ));
 
     try {
-      const res = await fetch(`${API_BASE}/campaign/${campaign._id}/active`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify({ isActive: newActiveState })
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || data.message || 'Failed to update campaign status');
-      }
-
+      await patch(`/campaign/${campaign._id}/active`, { isActive: newActiveState });
       toast({ 
         title: `Campaign ${newActiveState ? 'activated' : 'deactivated'} successfully!` 
       });
@@ -298,7 +252,7 @@ const handleSubmit = async (e) => {
   };
 
   return (
-    <div className="">
+    <div className="space-y-8">
       <Card>
         <CardHeader>
           <CardTitle>Create Campaign</CardTitle>
@@ -342,7 +296,7 @@ const handleSubmit = async (e) => {
         </CardContent>
       </Card>
 
-      <Card className="mt-[30px]">
+      <Card>
         <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-6 py-4">
           <CardTitle>My Campaigns</CardTitle>
