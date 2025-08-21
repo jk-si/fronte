@@ -60,7 +60,10 @@ const apiRequest = async (endpoint, options = {}) => {
       window.location.href = '/login';
       throw new Error('Authentication failed. Please login again.');
     }
-    throw new Error(data.error || data.message || 'API request failed');
+    const error = new Error(data.error || data.message || 'API request failed');
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
 
   return data;

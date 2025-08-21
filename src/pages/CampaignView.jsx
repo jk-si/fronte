@@ -12,6 +12,11 @@ export default function CampaignView() {
   const [latestGenerateUrl, setLatestGenerateUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const computedFullGenerateUrl = campaign && latestGenerateUrl?.generateSuffix
+    ? (campaign.originalUrl.includes('?')
+        ? `${campaign.originalUrl}&${latestGenerateUrl.generateSuffix}`
+        : `${campaign.originalUrl}?${latestGenerateUrl.generateSuffix}`)
+    : '';
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -97,79 +102,89 @@ export default function CampaignView() {
                 <div className="font-medium">{campaign.country}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Status</div>
+                <div className={`text-xs text-muted-foreground`}>Status</div>
                 <div className={`font-medium ${campaign.isActive !== false ? 'text-green-600' : 'text-red-600'}`}>
                   {campaign.isActive !== false ? 'Active' : 'Inactive'}
                 </div>
               </div>
             </div>
             
+            {/* URL Suffix Parameters */}
+            {campaign.urlSuffix && campaign.urlSuffix.trim() && (
+              <div className="border-t pt-6">
+                <div className="text-sm font-medium text-gray-900 mb-3">URL Suffix Parameters</div>
+                <div className="space-y-2">
+                  {campaign.urlSuffix.split('&').map((param, index) => {
+                    const [key, value] = param.split('=');
+                    return (
+                      <div key={index} className="flex items-center space-x-4 p-2 bg-gray-50 rounded-md">
+                        <div className="w-24 text-xs text-muted-foreground font-medium">{key}:</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
             {/* Generate Button */}
             <div>
-                             {/* <Button 
-                 onClick={handleGenerateUrl}
-                 disabled={generating || campaign.isActive === false}
-                 className="w-full md:w-auto"
-               >
-                 {generating ? 'Generating...' : 'Generate URL'}
-               </Button> */}
-               {campaign.isActive === false && (
-                 <p className="text-sm text-red-600 mt-2">
-                   Campaign is inactive. Cannot generate URLs.
-                 </p>
-               )}
+              {/* <Button 
+                onClick={handleGenerateUrl}
+                disabled={generating || campaign.isActive === false}
+                className="w-full md:w-auto"
+              >
+                {generating ? 'Generating...' : 'Generate URL'}
+              </Button> */}
+              {campaign.isActive === false && (
+                <p className="text-sm text-red-600 mt-2">
+                  Campaign is inactive. Cannot generate URLs.
+                </p>
+              )}
             </div>
             
-                         {/* Latest Generate URL Display */}
-             {latestGenerateUrl && latestGenerateUrl.hasGenerateUrl ? (
-               <div className="border-t pt-6">
-                 <div className="text-sm font-medium text-gray-900 mb-3">Latest Generate URL</div>
-                 <div className="space-y-3">
-                   <div>
-                     <div className="text-xs text-muted-foreground mb-1">Full Generate URL</div>
-                     <div className="p-3 bg-gray-50 rounded-md break-all font-mono text-sm border">
-                       {latestGenerateUrl.fullGenerateUrl}
-                     </div>
-                   </div>
-                   
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                     <div>
-                       <div className="text-xs text-muted-foreground mb-1">Proxy IP</div>
-                       <div className="font-medium text-sm">{latestGenerateUrl.proxyIp}</div>
-                     </div>
-                     <div>
-                       <div className="text-xs text-muted-foreground mb-1">Generated</div>
-                       <div className="font-medium text-sm">
-                         {latestGenerateUrl.createdAt ? new Date(latestGenerateUrl.createdAt).toLocaleString() : 'N/A'}
-                       </div>
-                     </div>
-                     <div className="flex items-end">
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         onClick={async () => {
-                           try {
-                             await navigator.clipboard.writeText(latestGenerateUrl.fullGenerateUrl);
-                             toast({ title: 'URL copied to clipboard!' });
-                           } catch (err) {
-                             toast({ title: 'Failed to copy URL', variant: 'destructive' });
-                           }
-                         }}
-                       >
-                         Copy URL
-                       </Button>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             ) : (
-               <div className="border-t pt-6">
-                 <div className="text-sm font-medium text-gray-900 mb-2">Generate URL</div>
-                 <p className="text-sm text-blue-600">
-                   No generate URL generated yet.
-                 </p>
-               </div>
-             )}
+            {/* Latest Generate URL Display */}
+            {latestGenerateUrl && latestGenerateUrl.generateSuffix ? (
+              <div className="border-t pt-6">
+                <div className="text-sm font-medium text-gray-900 mb-3">Latest Generate URL</div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Full Generate URL</div>
+                    <div className="p-3 bg-gray-50 rounded-md break-all font-mono text-sm border">
+                      {computedFullGenerateUrl}
+                    </div>
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(computedFullGenerateUrl);
+                          toast({ title: 'URL copied to clipboard!' });
+                        } catch (err) {
+                          toast({ title: 'Failed to copy URL', variant: 'destructive' });
+                        }
+                      }}
+                    >
+                      Copy URL
+                    </Button>
+                  </div>
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div className="text-xs text-yellow-800 font-medium mb-2">Generated Suffix:</div>
+                    <div className="text-xs text-yellow-700 font-mono break-all">
+                      {latestGenerateUrl.generateSuffix}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="border-t pt-6">
+                <div className="text-sm font-medium text-gray-900 mb-2">Generate URL</div>
+                <p className="text-sm text-blue-600">
+                  No generate URL generated yet.
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

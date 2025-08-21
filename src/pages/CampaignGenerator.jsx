@@ -13,6 +13,7 @@ import { EditCampaignModal } from '@/components/EditCampaignModal';
 import { Switch } from '@/components/ui/switch';
 import { useDebounce } from '@/hooks/use-debounce';
 import { get, post, del, patch } from '@/utils/api';
+import { CampaignModal } from '@/components/CampaignModal';
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -26,7 +27,7 @@ function formatDate(dateStr) {
 export default function CampaignGenerator() {
   const [countries, setCountries] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
-  const [form, setForm] = useState({ country: '', originalUrl: '' });
+  const [form, setForm] = useState({ country: '', originalUrl: '', urlSuffix: [] });
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ export default function CampaignGenerator() {
 
   // Debounced search term for API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Fetch countries once on mount
 useEffect(() => {
@@ -145,6 +147,28 @@ const handleCountry = (value) => {
   setForm((prev) => ({ ...prev, country: value })); // value is the country code
 };
 
+  // Handle URL suffix management (keys only)
+  const addUrlSuffix = () => {
+    setForm(prev => ({
+      ...prev,
+      urlSuffix: [...prev.urlSuffix, '']
+    }));
+  };
+
+  const removeUrlSuffix = (index) => {
+    setForm(prev => ({
+      ...prev,
+      urlSuffix: prev.urlSuffix.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateUrlSuffix = (index, value) => {
+    setForm(prev => ({
+      ...prev,
+      urlSuffix: prev.urlSuffix.map((item, i) => i === index ? value : item)
+    }));
+  };
+
   // Handle submit
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -154,12 +178,15 @@ const handleSubmit = async (e) => {
   }
   setSubmitting(true);
   try {
+    // Filter out empty keys
+    const filteredUrlSuffix = form.urlSuffix.map(k => k.trim()).filter(Boolean);
     const data = await post('/campaign', { 
-      country: form.country, // <-- this is the country code now
-      originalUrl: form.originalUrl 
+      country: form.country,
+      originalUrl: form.originalUrl,
+      urlSuffix: filteredUrlSuffix
     });
     toast({ title: 'Campaign created!' });
-    setForm({ country: '', originalUrl: '' });
+    setForm({ country: '', originalUrl: '', urlSuffix: [] });
     await fetchCampaigns();
   } catch (err) {
     if (err.message.includes('409')) {
@@ -251,51 +278,10 @@ const handleSubmit = async (e) => {
     }
   };
 
+  // no-op: validation is handled inside CampaignModal
+
   return (
     <div className="">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Campaign</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" onSubmit={handleSubmit}>
-          <div>
-              <Label htmlFor="originalUrl">Original URL</Label>
-              <Input
-                id="originalUrl"
-                name="originalUrl"
-                type="url"
-                placeholder="https://example.com"
-                value={form.originalUrl}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="country">Country</Label>
-              <Select value={form.country} onValueChange={handleCountry} disabled={loading}>
-                <SelectTrigger id="country" className="w-full">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {countries.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
- 
-            <div>
-              <Button type="submit" className="w-full" disabled={submitting || loading}>
-                {submitting ? 'Submitting...' : 'Create Campaign'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
       <Card className="mt-[30px]">
         <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-6 py-4">
@@ -329,6 +315,12 @@ const handleSubmit = async (e) => {
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
+
+               <div>
+              <Button className="w-full" onClick={() => setShowCreateModal(true)} disabled={loading}>
+                Create Campaign
+              </Button>
+            </div>
           </div>
           </div>
         </CardHeader>
@@ -366,8 +358,10 @@ const handleSubmit = async (e) => {
             <Table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign ID</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original URL</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL Suffix</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -376,13 +370,14 @@ const handleSubmit = async (e) => {
               <tbody className="bg-white divide-y divide-gray-100">
                 {campaigns.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                    <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
                       {loading || searchLoading ? 'Loading...' : 'No campaigns found.'}
                     </td>
                   </tr>
                 ) : (
                   campaigns.map((c) => (
                     <tr key={c._id || c.id} className="hover:bg-gray-50 transition">
+                      <td className="px-4 py-2">{c._id}</td>
                       <td className="px-4 py-2 align-top">
                         <a 
                           href={c.originalUrl}
@@ -394,6 +389,19 @@ const handleSubmit = async (e) => {
                         </a>
                       </td>
                       <td className="px-4 py-2">{c.country}</td>
+                      <td className="px-4 py-2">
+                        {c.urlSuffix ? (
+                          <div className="max-w-xs">
+                            <div className="text-xs text-gray-600 font-mono break-all">
+                              {c.urlSuffix.split(',').map((key, index) => (
+                                <span key={index} className="mr-2">{key}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">No suffix</span>
+                        )}
+                      </td>
                       <td className="px-4 py-2">
                         <div className="flex items-center space-x-2">
                           <Switch
@@ -456,11 +464,19 @@ const handleSubmit = async (e) => {
       </Card>
 
       {/* Edit Campaign Modal */}
-      <EditCampaignModal
+      <CampaignModal
         campaign={editTarget}
         isOpen={showEditModal}
         onClose={closeEditModal}
         onSave={handleEditSave}
+        countries={countries}
+      />
+
+      <CampaignModal
+        campaign={null}
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSave={async () => { await fetchCampaigns(); setShowCreateModal(false); }}
         countries={countries}
       />
 

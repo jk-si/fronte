@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,14 +8,20 @@ import { toast } from '@/hooks/use-toast';
 import { put } from '@/utils/api';
 
 export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries }) {
-  const [form, setForm] = useState({ originalUrl: '', country: '' });
+  const [form, setForm] = useState({ originalUrl: '', country: '', urlSuffix: [] });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (campaign) {
+      // Convert stored comma-separated string to array for editing
+      let urlSuffixArray = [];
+      if (campaign.urlSuffix) {
+        urlSuffixArray = campaign.urlSuffix.split(',').map(k => k.trim()).filter(Boolean);
+      }
       setForm({
         originalUrl: campaign.originalUrl || '',
-        country: campaign.country || ''
+        country: campaign.country || '',
+        urlSuffix: urlSuffixArray
       });
     }
   }, [campaign]);
@@ -29,6 +35,28 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
     setForm((prev) => ({ ...prev, country: value }));
   };
 
+  // Handle URL suffix management (keys only)
+  const addUrlSuffix = () => {
+    setForm(prev => ({
+      ...prev,
+      urlSuffix: [...prev.urlSuffix, '']
+    }));
+  };
+
+  const removeUrlSuffix = (index) => {
+    setForm(prev => ({
+      ...prev,
+      urlSuffix: prev.urlSuffix.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateUrlSuffix = (index, value) => {
+    setForm(prev => ({
+      ...prev,
+      urlSuffix: prev.urlSuffix.map((item, i) => i === index ? value : item)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.originalUrl || !form.country) {
@@ -38,9 +66,12 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
 
     setSubmitting(true);
     try {
+      // Filter out empty keys
+      const filteredUrlSuffix = form.urlSuffix.map(k => k.trim()).filter(Boolean);
       const data = await put(`/campaign/${campaign._id}`, {
         originalUrl: form.originalUrl,
-        country: form.country
+        country: form.country,
+        urlSuffix: filteredUrlSuffix
       });
 
       toast({ title: 'Campaign updated successfully!' });
@@ -98,6 +129,65 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* URL Suffix Section */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-sm font-medium">URL Suffix Keys</Label>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={addUrlSuffix}
+                className="text-xs h-7 px-2"
+              >
+                Add More
+              </Button>
+            </div>
+            
+            {form.urlSuffix.length === 0 ? (
+              <div className="text-center py-4 text-gray-500 border border-dashed border-gray-200 rounded-md text-sm">
+                <p>No URL suffix keys</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {form.urlSuffix.map((key, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Key"
+                        value={key}
+                        onChange={(e) => updateUrlSuffix(index, e.target.value)}
+                        className="text-sm h-8"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => removeUrlSuffix(index)}
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {form.urlSuffix.length > 0 && (
+              <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-xs text-blue-800 font-medium mb-1">Preview:</p>
+                <p className="text-xs text-blue-700 font-mono break-all">
+                  {form.urlSuffix
+                    .map(k => k.trim())
+                    .filter(Boolean)
+                    .map(k => `${k}={random}`)
+                    .join('&') || 'No valid keys yet'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
