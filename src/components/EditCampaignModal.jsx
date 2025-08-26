@@ -13,15 +13,10 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
 
   useEffect(() => {
     if (campaign) {
-      // Convert stored comma-separated string to array for editing
-      let urlSuffixArray = [];
-      if (campaign.urlSuffix) {
-        urlSuffixArray = campaign.urlSuffix.split(',').map(k => k.trim()).filter(Boolean);
-      }
       setForm({
         originalUrl: campaign.originalUrl || '',
         country: campaign.country || '',
-        urlSuffix: urlSuffixArray
+        urlSuffix: Array.isArray(campaign.urlSuffix) ? campaign.urlSuffix : []
       });
     }
   }, [campaign]);

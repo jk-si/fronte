@@ -14,14 +14,11 @@ export function CampaignModal({ campaign, isOpen, onClose, onSave, countries }) 
 
   if (!isOpen) return null;
 
-  const initialValues = isEdit
+  const initialValues = campaign && campaign._id
     ? {
         originalUrl: campaign?.originalUrl || '',
         country: campaign?.country || '',
-        urlSuffix: (campaign?.urlSuffix || '')
-          .split(',')
-          .map(k => k.trim())
-          .filter(Boolean)
+        urlSuffix: Array.isArray(campaign?.urlSuffix) ? campaign.urlSuffix : ['']
       }
     : { originalUrl: '', country: '', urlSuffix: [''] };
 

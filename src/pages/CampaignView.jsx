@@ -12,11 +12,7 @@ export default function CampaignView() {
   const [latestGenerateUrl, setLatestGenerateUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const computedFullGenerateUrl = campaign && latestGenerateUrl?.generateSuffix
-    ? (campaign.originalUrl.includes('?')
-        ? `${campaign.originalUrl}&${latestGenerateUrl.generateSuffix}`
-        : `${campaign.originalUrl}?${latestGenerateUrl.generateSuffix}`)
-    : '';
+  const computedFullGenerateUrl = latestGenerateUrl?.fullUrl 
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -40,42 +36,6 @@ export default function CampaignView() {
     };
     fetchCampaign();
   }, [originalUrl]);
-
-  const handleGenerateUrl = async () => {
-    if (!campaign) return;
-    
-    if (!campaign.isActive) {
-      toast({ 
-        title: 'Campaign is inactive', 
-        description: 'Cannot generate URL for inactive campaigns',
-        variant: 'destructive' 
-      });
-      return;
-    }
-
-    setGenerating(true);
-    try {
-      await post('/generate-url', {
-        campaignId: campaign._id,
-        baseGenerateUrl: campaign.originalUrl,
-        country: campaign.country
-      });
-
-      toast({ title: 'URL generated successfully!' });
-      
-      // Refresh latest generate URL (public access)
-      try {
-        const affData = await getPublic(`/generate-urls/${campaign._id}`);
-        setLatestGenerateUrl(affData);
-      } catch (err) {
-        console.error('Failed to refresh generate URL:', err);
-      }
-    } catch (err) {
-      toast({ title: err.message || 'Failed to generate URL', variant: 'destructive' });
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   if (loading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
   if (!campaign) return <div className="p-8 text-center text-destructive">Campaign not found.</div>;
@@ -110,31 +70,21 @@ export default function CampaignView() {
             </div>
             
             {/* URL Suffix Parameters */}
-            {campaign.urlSuffix && campaign.urlSuffix.trim() && (
+            {Array.isArray(campaign.urlSuffix) && campaign.urlSuffix.length > 0 && (
               <div className="border-t pt-6">
                 <div className="text-sm font-medium text-gray-900 mb-3">URL Suffix Parameters</div>
                 <div className="space-y-2">
-                  {campaign.urlSuffix.split('&').map((param, index) => {
-                    const [key, value] = param.split('=');
-                    return (
-                      <div key={index} className="flex items-center space-x-4 p-2 bg-gray-50 rounded-md">
-                        <div className="w-24 text-xs text-muted-foreground font-medium">{key}:</div>
-                      </div>
-                    );
-                  })}
+                  {campaign.urlSuffix.map((key, index) => (
+                    <div key={index} className="flex items-center space-x-4 p-2 bg-gray-50 rounded-md">
+                      <div className="w-24 text-xs text-muted-foreground font-medium">{key}:</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
             
             {/* Generate Button */}
             <div>
-              {/* <Button 
-                onClick={handleGenerateUrl}
-                disabled={generating || campaign.isActive === false}
-                className="w-full md:w-auto"
-              >
-                {generating ? 'Generating...' : 'Generate URL'}
-              </Button> */}
               {campaign.isActive === false && (
                 <p className="text-sm text-red-600 mt-2">
                   Campaign is inactive. Cannot generate URLs.
@@ -173,6 +123,22 @@ export default function CampaignView() {
                     <div className="text-xs text-yellow-800 font-medium mb-2">Generated Suffix:</div>
                     <div className="text-xs text-yellow-700 font-mono break-all">
                       {latestGenerateUrl.generateSuffix}
+                    </div>
+                    <div className="mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(latestGenerateUrl.generateSuffix);
+                            toast({ title: 'Suffix copied to clipboard!' });
+                          } catch (err) {
+                            toast({ title: 'Failed to copy suffix', variant: 'destructive' });
+                          }
+                        }}
+                      >
+                        Copy Suffix
+                      </Button>
                     </div>
                   </div>
                 </div>

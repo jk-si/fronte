@@ -390,10 +390,10 @@ const handleSubmit = async (e) => {
                       </td>
                       <td className="px-4 py-2">{c.country}</td>
                       <td className="px-4 py-2">
-                        {c.urlSuffix ? (
+                        {Array.isArray(c.urlSuffix) && c.urlSuffix.length > 0 ? (
                           <div className="max-w-xs">
                             <div className="text-xs text-gray-600 font-mono break-all">
-                              {c.urlSuffix.split(',').map((key, index) => (
+                              {c.urlSuffix.map((key, index) => (
                                 <span key={index} className="mr-2">{key}</span>
                               ))}
                             </div>
