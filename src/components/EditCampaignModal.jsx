@@ -8,7 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { put } from '@/utils/api';
 
 export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries }) {
-  const [form, setForm] = useState({ originalUrl: '', country: '', urlSuffix: [] });
+  const [form, setForm] = useState({ originalUrl: '', country: '', urlSuffix: [], intervalMinutes: 6 });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -16,7 +16,8 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
       setForm({
         originalUrl: campaign.originalUrl || '',
         country: campaign.country || '',
-        urlSuffix: Array.isArray(campaign.urlSuffix) ? campaign.urlSuffix : []
+        urlSuffix: Array.isArray(campaign.urlSuffix) ? campaign.urlSuffix : [],
+        intervalMinutes: campaign.intervalMinutes ?? 6
       });
     }
   }, [campaign]);
@@ -66,7 +67,8 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
       const data = await put(`/campaign/${campaign._id}`, {
         originalUrl: form.originalUrl,
         country: form.country,
-        urlSuffix: filteredUrlSuffix
+        urlSuffix: filteredUrlSuffix,
+        intervalMinutes: Number(form.intervalMinutes)
       });
 
       toast({ title: 'Campaign updated successfully!' });
@@ -124,6 +126,21 @@ export function EditCampaignModal({ campaign, isOpen, onClose, onSave, countries
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="intervalMinutes">Run Interval (minutes)</Label>
+            <Input
+              id="intervalMinutes"
+              name="intervalMinutes"
+              type="number"
+              min={1}
+              step={1}
+              placeholder="e.g., 5"
+              value={form.intervalMinutes}
+              onChange={handleChange}
+              required
+            />
           </div>
 
           {/* URL Suffix Section */}

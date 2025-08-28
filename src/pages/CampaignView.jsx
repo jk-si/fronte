@@ -12,7 +12,7 @@ export default function CampaignView() {
   const [latestGenerateUrl, setLatestGenerateUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const computedFullGenerateUrl = latestGenerateUrl?.fullUrl 
+  const computedFullGenerateUrl = latestGenerateUrl?.fullUrl
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -20,7 +20,7 @@ export default function CampaignView() {
       try {
         const data = await get(`/campaign/${encodeURIComponent(originalUrl)}`);
         setCampaign(data);
-        
+
         // Fetch latest generate URL for this campaign (public access)
         try {
           const affData = await getPublic(`/generate-urls/${data._id}`);
@@ -62,13 +62,17 @@ export default function CampaignView() {
                 <div className="font-medium">{campaign.country}</div>
               </div>
               <div>
+                <div className="text-xs text-muted-foreground">Interval Minutes</div>
+                <div className="font-medium">{campaign.intervalMinutes ?? 6}</div>
+              </div>
+              <div>
                 <div className={`text-xs text-muted-foreground`}>Status</div>
                 <div className={`font-medium ${campaign.isActive !== false ? 'text-green-600' : 'text-red-600'}`}>
                   {campaign.isActive !== false ? 'Active' : 'Inactive'}
                 </div>
               </div>
             </div>
-            
+
             {/* URL Suffix Parameters */}
             {Array.isArray(campaign.urlSuffix) && campaign.urlSuffix.length > 0 && (
               <div className="border-t pt-6">
@@ -82,16 +86,16 @@ export default function CampaignView() {
                 </div>
               </div>
             )}
-            
+
             {/* Generate Button */}
             <div>
               {campaign.isActive === false && (
-                <p className="text-sm text-red-600 mt-2">
+                <p className="text-sm text-red-600">
                   Campaign is inactive. Cannot generate URLs.
                 </p>
               )}
             </div>
-            
+
             {/* Latest Generate URL Display */}
             {latestGenerateUrl && latestGenerateUrl.generateSuffix ? (
               <div className="border-t pt-6">
@@ -119,6 +123,16 @@ export default function CampaignView() {
                       Copy URL
                     </Button>
                   </div>
+                  <div className='border-t pt-6'>
+
+                    <div className="text-xs text-muted-foreground mb-1 font-bold">Proxy IP</div>
+                    <div className='flex items-center space-x-2'>
+                      <div className="p-3 bg-gray-50 rounded-md break-all font-mono text-sm border">
+                        {latestGenerateUrl.proxyIp}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                     <div className="text-xs text-yellow-800 font-medium mb-2">Generated Suffix:</div>
                     <div className="text-xs text-yellow-700 font-mono break-all">

@@ -362,9 +362,11 @@ const handleSubmit = async (e) => {
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original URL</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL Suffix</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interval Minutes</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
@@ -402,6 +404,8 @@ const handleSubmit = async (e) => {
                           <span className="text-gray-400 text-sm">No suffix</span>
                         )}
                       </td>
+                      <td className="px-4 py-2">{c.intervalMinutes}</td>
+
                       <td className="px-4 py-2">
                         <div className="flex items-center space-x-2">
                           <Switch

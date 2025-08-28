@@ -18,16 +18,18 @@ export function CampaignModal({ campaign, isOpen, onClose, onSave, countries }) 
     ? {
         originalUrl: campaign?.originalUrl || '',
         country: campaign?.country || '',
-        urlSuffix: Array.isArray(campaign?.urlSuffix) ? campaign.urlSuffix : ['']
+        urlSuffix: Array.isArray(campaign?.urlSuffix) ? campaign.urlSuffix : [''],
+        intervalMinutes: campaign?.intervalMinutes ?? 6
       }
-    : { originalUrl: '', country: '', urlSuffix: [''] };
+    : { originalUrl: '', country: '', urlSuffix: [''], intervalMinutes: 6 };
 
   const validationSchema = Yup.object().shape({
     originalUrl: Yup.string().url('Enter a valid URL').required('Original URL is required'),
     country: Yup.string().required('Country is required'),
     urlSuffix: Yup.array()
       .of(Yup.string().trim().min(1, 'Key cannot be empty'))
-      .min(1, 'At least one URL suffix key is required')
+      .min(1, 'At least one URL suffix key is required'),
+    intervalMinutes: Yup.number().typeError('Must be a number').min(1, 'Minimum 1 minute').required('Interval is required')
   });
 
   return (
@@ -51,7 +53,8 @@ export function CampaignModal({ campaign, isOpen, onClose, onSave, countries }) 
               const payload = {
                 originalUrl: values.originalUrl,
                 country: values.country,
-                urlSuffix: filteredUrlSuffix
+                urlSuffix: filteredUrlSuffix,
+                intervalMinutes: Number(values.intervalMinutes)
               };
               const data = isEdit
                 ? await put(`/campaign/${campaign._id}`, payload)
@@ -94,6 +97,12 @@ export function CampaignModal({ campaign, isOpen, onClose, onSave, countries }) 
                   </SelectContent>
                 </Select>
                 <ErrorMessage name="country" component="div" className="text-red-600 text-xs mt-1" />
+              </div>
+
+              <div>
+                <Label htmlFor="intervalMinutes">Run Interval (minutes)</Label>
+                <Field as={Input} id="intervalMinutes" name="intervalMinutes" type="number" min={1} step={1} placeholder="e.g., 5" />
+                <ErrorMessage name="intervalMinutes" component="div" className="text-red-600 text-xs mt-1" />
               </div>
 
               <div>

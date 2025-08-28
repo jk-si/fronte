@@ -131,7 +131,7 @@ console.log(urls ,"urls")
                 {/* <TableHead className="font-medium text-foreground">Original URL</TableHead> */}
                 <TableHead className="font-medium text-foreground">Country</TableHead>
                 <TableHead className="font-medium text-foreground">Generated URL</TableHead>
-                <TableHead className="font-medium text-foreground">proxyIp</TableHead>
+                <TableHead className="font-medium text-foreground">Proxy IP</TableHead>
                 <TableHead className="font-medium text-foreground">Created</TableHead>
                 {/* <TableHead className="font-medium text-foreground">Status</TableHead> */}
                 {/* <TableHead className="font-medium text-foreground">Clicks</TableHead> */}
